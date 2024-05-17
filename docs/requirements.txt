@@ -1,0 +1,34 @@
+
+## Requirements for the url-lookup-service (Malware URL Lookup Exercise)
+
+Notes:
+ - Include unit tests
+ - Create detailed instructions on how to get the application up and running
+
+[Malware] URL lookup service
+ - Context: This is called by an HTTP proxy to allow or block traffic based on our response
+ - This service maintains several databases of malware URLs
+ - Our response indicates whether the submitted URL contains malware (key word: 'safe')
+   - *note: Presumably future versions could include further information about the URL
+ - Handle GET request like 'GET /v1/urlinfo/{resource_url_with_query_string}'
+ - Choose the:
+   - authorization
+   - response format and structure
+ - Document the API in the README
+ - *Note: These lookups block users from accessing the URL until they get a response
+    - so timely responses are critical
+
+Thoughts:
+# Q. Do we need to be concerned with URL encoding?
+
+
+# Further questions, and potential enhancements:
+
+1. The size of the URL list could grow infinitely, how might you scale this beyond the
+memory capacity of the system?
+
+2. The number of requests may exceed the capacity of this system, how might you solve
+that?
+
+3. What are some strategies you might use to update the service with new URLs? Updates
+may be as many as 5000 URLs a day with updates arriving every 10 minutes.
