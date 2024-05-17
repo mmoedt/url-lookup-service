@@ -245,7 +245,8 @@ do-run() {
 run-once() {
     # return $(do-run-loop)
     # npm run dev
-    python src/main.py
+    # fastapi dev src/main.py
+    uvicorn main:app --reload
 }
 
 run-loop() {
@@ -317,12 +318,22 @@ run-loop() {
 
 do-tests() {
     true &&
-        banner test:unit &&
-        python src/tests.py
+        #banner test:unit &&
+        #python tests.py
 
     echo "Quick CURL test:"
-    TEST_URL_1="https%3A%2F%2Fwww.youtube.com%2Fwatch%3Fv%3DdQw4w9WgXcQ"
-    curl "http://localhost:8000/v1/urlinfo/${TEST_URL_1}"
+
+TEST_URLS="
+https%3A%2F%2Fwww.youtube.com%2Fwatch%3Fv%3DdQw4w9WgXcQ
+https%3A%2F%2Fwww.youtube.com%2Fshorts%2FDJHRSER6Mz4
+"
+    for ENCODED_URL in ${TEST_URLS}; do
+        echo -n "Testing: '${ENCODED_URL}'.. "
+        curl -X 'GET' \
+            "http://localhost:8000/v1/urlinfo/${ENCODED_URL}" \
+            -H 'accept: application/json'
+        echo ""
+    done
 }
 
 # do-update-api-docs() {
