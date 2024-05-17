@@ -1,0 +1,58 @@
+
+Re: Questions at the bottom of the exercise PDF
+
+Q1. How to scale the size of the URL list?
+
+- Divide among databases .. look at database clustering options
+- Divide URLs based on a criteria .. eg. a 'starting character',
+  that could split it e.g. among 26+ servers to start  (but however we want to split it)
+  - Use a special load balancer that decides which servers to call?  Which can be updated based on our need to add more DBs
+
+
+Q2. How to scale the number of requests?
+    (Exceeds capacity of the system)
+
+- Use a load balancer, and run a number of containers
+  - could use something like Kubernetes to manage this
+- To start with, they could use the same set of databases,
+  but they could each have their own set of databases as well..
+
+
+Q3. What are some strategies you might use to update the service with new URLs?
+    (Updates may be as many as 5000 URLs a day with updates arriving every 10 minutes.)
+
+- First of all, 5000 URLs a day doesn't sound like a lot; and it should not take very long at all
+- Handle similar to the URL lookup?
+   - re: splitting among databases, it would need the same logic
+- Will probably want stricter authorization / authentication
+- The service can run an SQL query to insert the URLs
+  - (We could use a separate service to handle this task, unsure if desirable or not)
+- We probably want to avoid running SQL queries directly for these updates
+- Instead of inserting queries one-by-one, we should run them as a batch
+  - we shouldn't need them to be in a transaction
+  - we could run the operation such that we update them if they already exist  (we don't want to error out)
+
+
+--------------------
+
+Initial Ideas:
+
+- Start with local SQLite, but design to switch to Postgres or AWS RDS too
+- v2: send async requests to multiple databases at the same time
+- v3: use a timeout; if one of the databases doesn't respond quickly, perhaps we can respond if we get enough results back
+  (this is to try to ensure our service is timely)
+
+Re: URL lookup functionality
+ - start with a simple query, e.g. SELECT count(*) FROM malware_urls WHERE url = {1};
+ - v2: use regular expressions, since we might want some flexibility in our matches. (The DB should support this)
+
+
+- For detailed instructions to get it running, use a helper script  (use my 'do' script)
+- Include short-lived feature branches, and merge to main
+- Test To-do: Verify the correct response format and structure
+- Include a script to run a quick test suite (./do tests)
+
+- Re: '/v1/urlinfo' - move to configuration file? Will want to support updated versions
+- respond back whether safe or not .. use JSON, start with a 'safe' field, but we can add arbitrary fields in the future
+- Re: Authorization - start with a whitelist of IP addresses to service?
+
