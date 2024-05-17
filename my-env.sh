@@ -16,12 +16,12 @@ then
     sudo sysctl -w ${FSKEY}=${MIN_MUW_SETTING}
 fi
 
-# 3. Load SSH keys into our ssh-agent, starting it if needed
-if [ -e "${SSH_AUTH_SOCK}" ] && [ -n "$(ps -p ${SSH_AGENT_PID} -o pid=)" ]
-then : # ssh agent set up already
-else eval $(ssh-agent -s)
-fi
-ssh-add "${MY_SSH_KEY_FILE}"
+# # 3. Load SSH keys into our ssh-agent, starting it if needed
+# if [ -e "${SSH_AUTH_SOCK}" ] && [ -n "$(ps -p ${SSH_AGENT_PID} -o pid=)" ]
+# then : # ssh agent set up already
+# else eval $(ssh-agent -s)
+# fi
+# ssh-add "${MY_SSH_KEY_FILE}"
 
 # 4. Set up NVM to run right here
 export XDG_CONFIG_HOME="${THIS_DIR}"
@@ -41,5 +41,8 @@ else
     fi
 fi
 # </NVM-RELATED>
+
+# 5. Set up our Python VirtualEnv environment
+source .venv/bin/activate
 
 # PATH="${THIS_DIR}/node_modules/.bin:${PATH}"  # for npm-installed tools
