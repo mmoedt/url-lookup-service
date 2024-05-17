@@ -24,3 +24,9 @@ To run the service locally, run:
 `./do run`
 
 And then the service can be reached at `http://localhost:8000`.
+
+
+The API is documented using the OpenAPI standard, and can be found in the file docs/openapi.json
+
+While the service is running, you can also see the API documented,
+  and test requests, at `http://localhost:8000/docs`
