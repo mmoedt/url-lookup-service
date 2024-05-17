@@ -336,10 +336,14 @@ https%3A%2F%2Fwww.youtube.com%2Fshorts%2FDJHRSER6Mz4
     done
 }
 
-# do-update-api-docs() {
-#     echo "Updating API documentation..."
-#     ## FIXME
-# }
+do-update-api-docs() {
+    ./do run &
+    _PID=$!
+    echo "Updating API documentation..."
+    wget -O docs/openapi.json "http://localhost:8000/openapi.json"
+    type jq && cat docs/openapi.json | jq > docs/openapi.nice.json
+    kill ${_PID}
+}
 
 # Run the script using all the above defined functions
 run-do-script $@
