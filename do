@@ -45,7 +45,7 @@ banner() {
 #
 
 do-help() {
-    show_usage
+    usage
     # Append a little extra info:
     cat <<EOF
 
@@ -73,9 +73,20 @@ env-tests() {
     return 0
 }
 
+load-settings() {
+    # shellcheck source=./my-settings.sh
+    if [ -e "${SETTINGS_FILE}" ]; then
+        source "${SETTINGS_FILE}"
+    else
+        # echo "No settings file '${SETTINGS_FILE}' found"  # quietly exit for now
+        return
+    fi
+    #MY_DB_PROPS_FILE="${MY_DB_PROPS_FILE:-${DB_JAVA_USER}.db.properties}"
+}
+
 do-build() {
 
-    do-load-settings
+    load-settings
 
     if [[ ${1} =~ [-]{0,2}noclean ]]; then  # okay for now if 'noclean', '-noclean', '--noclean'
         local NOCLEAN="1"
@@ -129,39 +140,33 @@ do-build() {
     return ${RET}
 }
 
-do-load-settings() {
-    # shellcheck source=./my-settings.sh
-    if [ -e "${SETTINGS_FILE}" ]; then source "${SETTINGS_FILE}"; else echo "No settings file '${SETTINGS_FILE}' found"; return; fi
-    #MY_DB_PROPS_FILE="${MY_DB_PROPS_FILE:-${DB_JAVA_USER}.db.properties}"
-}
+# do-unpause() {
+#     for FILE in "do-run-paused.flag" "do-run-stop.flag"; do
+#         if [ -e "${FILE}" ]; then
+#             rm "${FILE}"
+#         fi
+#     done
+# }
 
-do-unpause() {
-    for FILE in "do-run-paused.flag" "do-run-stop.flag"; do
-        if [ -e "${FILE}" ]; then
-            rm "${FILE}"
-        fi
-    done
-}
+# do-pause() {
+#     FLAGFILE="do-run-paused.flag"
+#     touch "${FLAGFILE}"
+#     stop-server || return 1
+# }
 
-do-pause() {
-    FLAGFILE="do-run-paused.flag"
-    touch "${FLAGFILE}"
-    stop-server || return 1
-}
+# do-restart() {
+#     BUILD_ARG="${1}"  # e.g. potential '-noclean'
 
-do-restart() {
-    BUILD_ARG="${1}"  # e.g. potential '-noclean'
-
-    do-pause
-    if [[ $? != 0 ]]; then
-        echo "Failed to restart server - not proceeding with build or removing flag-file.."
-    else
-        echo "Rebuilding.."
-        do-build "${BUILD_ARG}" && \
-            { echo -e " Done build!\n Unpausing server... "; do-unpause; } || \
-            { echo -e " ##! FAILURE TO BUILD - Not removing flag-file to enable service restart!\n  so, re-run the 'restart' subcommand after fixing, or remove '${FLAGFILE}' manually. "; }
-    fi
-}
+#     do-pause
+#     if [[ $? != 0 ]]; then
+#         echo "Failed to restart server - not proceeding with build or removing flag-file.."
+#     else
+#         echo "Rebuilding.."
+#         do-build "${BUILD_ARG}" && \
+#             { echo -e " Done build!\n Unpausing server... "; do-unpause; } || \
+#             { echo -e " ##! FAILURE TO BUILD - Not removing flag-file to enable service restart!\n  so, re-run the 'restart' subcommand after fixing, or remove '${FLAGFILE}' manually. "; }
+#     fi
+# }
 
 ##
 ## FIXME: Need to update for our python based service
@@ -201,15 +206,15 @@ stop-server() {
     fi
 }
 
-do-stop() {
-    MAX_TRIES=5
-    FLAGFILE="do-run-stop.flag"
+# do-stop() {
+#     MAX_TRIES=5
+#     FLAGFILE="do-run-stop.flag"
 
-    # Create the flagfile so that do-run will not autorestart..
-    touch "${FLAGFILE}"
+#     # Create the flagfile so that do-run will not autorestart..
+#     touch "${FLAGFILE}"
 
-    stop-server || return 1
-}
+#     stop-server || return 1
+# }
 
 ##
 ## FIXME: Need to update for our python based service
@@ -287,41 +292,43 @@ run-loop() {
 #     return 1
 # }
 
-do-pre-push() {
-    # sls offline start
-    banner lint:fix &&
-        true && # yarn lint:fix &&  ## FIXME
-        banner format:fix &&
-        true && # yarn format:fix &&  ## FIXME
-        banner build test with install &&
-        yarn install && # install dependencies
-        yarn build && # build our service
-        banner OK to build test &&
-        # banner show migrations &&
-        # orm migration:show &&
-        # banner show schema diffs DISABLED &&
-        # # orm schema:log &&
-        banner test:unit &&
-        do-tests && # yarn test:unit &&
-        banner test:integration DISABLED &&
-        # yarn test:integration &&
-        # banner LAST: serverless run test &&
-        # yarn run:local
-    banner pre-push done
-}
+# do-pre-push() {
+#     # sls offline start
+#     banner lint:fix &&
+#         true && # yarn lint:fix &&  ## FIXME
+#         banner format:fix &&
+#         true && # yarn format:fix &&  ## FIXME
+#         banner build test with install &&
+#         yarn install && # install dependencies
+#         yarn build && # build our service
+#         banner OK to build test &&
+#         # banner show migrations &&
+#         # orm migration:show &&
+#         # banner show schema diffs DISABLED &&
+#         # # orm schema:log &&
+#         banner test:unit &&
+#         do-tests && # yarn test:unit &&
+#         banner test:integration DISABLED &&
+#         # yarn test:integration &&
+#         # banner LAST: serverless run test &&
+#         # yarn run:local
+#     banner pre-push done
+# }
 
 do-tests() {
     true &&
         banner test:unit &&
-        yarn test:unit &&
-        banner test:integration &&
-        yarn test:integration
+        python src/tests.py
+
+    echo "Quick CURL test:"
+    TEST_URL_1="https%3A%2F%2Fwww.youtube.com%2Fwatch%3Fv%3DdQw4w9WgXcQ"
+    curl "http://localhost:8000/v1/urlinfo/${TEST_URL_1}"
 }
 
-do-update-api-docs() {
-    echo "Updating API documentation..."
-    ## FIXME
-}
+# do-update-api-docs() {
+#     echo "Updating API documentation..."
+#     ## FIXME
+# }
 
 # Run the script using all the above defined functions
 run-do-script $@

@@ -18,3 +18,9 @@ as compilation, testing, and ...
 
 Simply run the script without arguments to see the subcommands that are supported
 and their options.
+
+To run the service locally, run:
+
+`./do run`
+
+And then the service can be reached at `http://localhost:8000`.
