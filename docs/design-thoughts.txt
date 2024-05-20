@@ -7,7 +7,19 @@ Q1. How to scale the size of the URL list?
 - Divide URLs based on a criteria .. eg. a 'starting character',
   that could split it e.g. among 26+ servers to start  (but however we want to split it)
   - Use a special load balancer that decides which servers to call?  Which can be updated based on our need to add more DBs
+[* Update:
+Looking briefly into this, it looks like MongoDB could be a great choice.  I thought about Redis as well due to the in-memory caching and speed, but we could also set up MongoDB to run entirely in memory if truly needed.
+e.g. Some details (from wikipedia):
+MongoDB provides high availability with replica sets
+Secondaries can optionally serve read operations, but that data is only eventually consistent by default
 
+-> That should suit our purpose just fine
+
+MongoDB scales horizontally using sharding
+The data is split into ranges (based on the user provided shard key) and distributed across multiple shards, which are masters with one or more replicas
+
+-> So it makes sense to take advantage of database provided functionality, and not implement this separately in our service.
+]
 
 Q2. How to scale the number of requests?
     (Exceeds capacity of the system)
