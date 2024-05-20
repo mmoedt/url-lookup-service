@@ -1,4 +1,17 @@
 
 - Set up docker container, install all needed dependencies there
   - e.g. for debian, python3 python3.11-venv
-  
+
+- Set up GitHub project:
+   - CI pipeline in GitHub, to run the automated tests
+     and prevent merging of feature branches that don't pass tests
+   - Prevent pushing directly to the 'main' branch
+   - Require code reviews of feature branches as well before merging
+
+- Add deployment command, perhaps triggered via CI pipelines
+  - only on main branch, or perhaps release branches that branch from main
+
+- Update 'build' perhaps 'pre-push' script commands
+  - run a linter
+  - run a 'prettier' style command to standardize the format of the source
+    (this really helps with code reviews, so that only actual changes are shown, not style arguments)
